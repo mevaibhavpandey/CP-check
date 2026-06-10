@@ -308,13 +308,13 @@
 
 <script>
 /* ===== SETTINGS ===== */
-const TOTAL_SETS = 9;
-const FLASH_MS = 1500;
+const TOTAL_SETS = 30;
+let FLASH_MS = 1500;
 
 const SHADES = {
-  R: ["#ff2a2a","#ff3b00","#e60026","#ff4d00","#d45500","#aa3300"],
-  G: ["#00cc44","#22c55e","#66cc00","#99b300","#b2e600","#2bd36b"],
-  Y: ["#ffd11a","#ffbb00","#ffcc33","#ffee55","#ffaa00","#e69c00"]
+  R:["#FF0000","#E60000","#CC0000","#FF3300"],
+  G:["#00AA00","#00BB00","#00CC00","#009900"],
+  Y:["#FFCC00","#FFD700","#FFC000","#E6B800"]
 };
 
 function randInt(n){ return Math.floor(Math.random() * n); }
@@ -370,8 +370,14 @@ const resultList   = document.getElementById("resultList");
 
 /* ===== HELPERS ===== */
 function setDot(dotEl, hex){
+  const brightness = 0.55 + Math.random()*0.45;
   dotEl.style.background = hex;
   dotEl.style.color = hex;
+  dotEl.style.opacity = brightness;
+  dotEl.style.boxShadow =
+      `0 0 ${10*brightness}px currentColor,
+       0 0 ${20*brightness}px currentColor,
+       0 0 ${40*brightness}px currentColor`;
   dotEl.classList.add("dotGlow");
 }
 
@@ -468,6 +474,7 @@ async function showSet(){
   setDot(dotRight, pick(SHADES[target.right]));
 
   showDots();
+  FLASH_MS = 1200 + Math.random()*800;
   await new Promise(r => setTimeout(r, FLASH_MS));
   hideDots();
 
@@ -525,10 +532,17 @@ function finishTest(){
   const timeFactor = Math.max(0, 90 - (totalSec - 25) * 1.5); // ~25–35s ideal range
   const combinedScore = Math.round(accuracy * 0.75 + timeFactor * 0.25);
 
+  let cpEstimate="CP-5 Like";
+  if(accuracy>=95) cpEstimate="CP-1 Like";
+  else if(accuracy>=85) cpEstimate="CP-2 Like";
+  else if(accuracy>=70) cpEstimate="CP-3 Like";
+  else if(accuracy>=50) cpEstimate="CP-4 Like";
+
   finalScore.innerHTML = `
     Accuracy: ${correct}/${TOTAL_SETS} (${accuracy}%)<br>
     Time taken: ${totalSec} seconds<br>
-    <span style="font-size:1.15em">Performance Score: ${combinedScore}/100</span>
+    <span style="font-size:1.15em">Performance Score: ${combinedScore}/100</span><br>
+    <b>Practice Estimate: ${cpEstimate}</b>
   `;
 
   let remark = "";
